@@ -35,6 +35,15 @@ export interface ListSessionsResponse {
   offset: number;
 }
 
+export interface ListMessagesResponse {
+  items: SessionMessage[];
+  total: number;
+  limit: number;
+  offset: number;
+  toolCallCount: number;
+  toolResultCount: number;
+}
+
 export async function fetchSessions(params: URLSearchParams = new URLSearchParams()) {
   const response = await fetch(`/api/sessions?${params.toString()}`);
   return parseResponse<ListSessionsResponse>(response);
@@ -45,15 +54,26 @@ export async function fetchCwds() {
   return parseResponse<{ items: CwdOption[] }>(response);
 }
 
-export async function fetchMessages(id: string, includeRaw: boolean) {
-  const params = new URLSearchParams({ limit: "500" });
+export async function fetchMessages(
+  id: string,
+  includeRaw: boolean,
+  includeToolCalls: boolean,
+  includeToolResults: boolean,
+) {
+  const params = new URLSearchParams({ limit: "5000" });
   if (includeRaw) {
     params.set("includeRaw", "true");
+  }
+  if (includeToolCalls) {
+    params.set("includeToolCalls", "true");
+  }
+  if (includeToolResults) {
+    params.set("includeToolResults", "true");
   }
   const response = await fetch(
     `/api/sessions/${encodeURIComponent(id)}/messages?${params.toString()}`,
   );
-  return parseResponse<{ items: SessionMessage[] }>(response);
+  return parseResponse<ListMessagesResponse>(response);
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {

@@ -1,5 +1,5 @@
 import { Check, Copy, X } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { fetchMessages, type SessionMessage, type SessionSummary } from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
   const [includeRaw, setIncludeRaw] = useState(false);
   const [showToolResults, setShowToolResults] = useState(false);
   const [showToolCalls, setShowToolCalls] = useState(false);
+  const [toolCallCount, setToolCallCount] = useState(0);
+  const [toolResultCount, setToolResultCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pathCopied, setPathCopied] = useState(false);
@@ -31,21 +33,15 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
     }
     setLoading(true);
     setError(null);
-    fetchMessages(session.id, includeRaw)
-      .then((result) => setMessages(result.items))
+    fetchMessages(session.id, includeRaw, showToolCalls, showToolResults)
+      .then((result) => {
+        setMessages(result.items);
+        setToolCallCount(result.toolCallCount);
+        setToolResultCount(result.toolResultCount);
+      })
       .catch((cause: unknown) => setError(cause instanceof Error ? cause.message : String(cause)))
       .finally(() => setLoading(false));
-  }, [session, includeRaw]);
-
-  const toolCallCount = useMemo(
-    () => messages.filter((message) => isToolCall(message)).length,
-    [messages],
-  );
-
-  const toolResultCount = useMemo(
-    () => messages.filter((message) => isToolResult(message)).length,
-    [messages],
-  );
+  }, [session, includeRaw, showToolCalls, showToolResults]);
 
   useEffect(() => {
     startMessageFiltersTransition(() => {
@@ -168,7 +164,12 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
           {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           {!loading && !error && visibleMessages.length === 0 && (
             <p className="text-sm text-slate-500">
-              {hiddenToolMessageCount(messages, showToolCalls, showToolResults) > 0
+              {hiddenToolMessageCount(
+                toolCallCount,
+                toolResultCount,
+                showToolCalls,
+                showToolResults,
+              ) > 0
                 ? "Only tool calls/results are hidden. Use the toggles to inspect tool activity."
                 : "No readable messages found."}
             </p>
@@ -191,17 +192,10 @@ function isToolCall(message: SessionMessage) {
 }
 
 function hiddenToolMessageCount(
-  messages: SessionMessage[],
+  toolCallCount: number,
+  toolResultCount: number,
   showToolCalls: boolean,
   showToolResults: boolean,
 ) {
-  return messages.filter((message) => {
-    if (isToolCall(message)) {
-      return !showToolCalls;
-    }
-    if (isToolResult(message)) {
-      return !showToolResults;
-    }
-    return false;
-  }).length;
+  return (showToolCalls ? 0 : toolCallCount) + (showToolResults ? 0 : toolResultCount);
 }
