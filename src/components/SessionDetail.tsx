@@ -1,5 +1,5 @@
-import { Check, Copy, X } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { ArrowUp, Check, Copy, X } from "lucide-react";
+import { useEffect, useRef, useState, useTransition, type UIEvent } from "react";
 
 import { fetchMessages, type SessionMessage, type SessionSummary } from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -22,10 +22,12 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
   const [showToolCalls, setShowToolCalls] = useState(false);
   const [toolCallCount, setToolCallCount] = useState(0);
   const [toolResultCount, setToolResultCount] = useState(0);
+  const [isScrolledDown, setIsScrolledDown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pathCopied, setPathCopied] = useState(false);
   const [isMessageFiltersPending, startMessageFiltersTransition] = useTransition();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!session) {
@@ -42,6 +44,11 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
       .catch((cause: unknown) => setError(cause instanceof Error ? cause.message : String(cause)))
       .finally(() => setLoading(false));
   }, [session, includeRaw, showToolCalls, showToolResults]);
+
+  useEffect(() => {
+    setIsScrolledDown(false);
+    contentRef.current?.scrollTo?.({ top: 0 });
+  }, [session?.id]);
 
   useEffect(() => {
     startMessageFiltersTransition(() => {
@@ -68,6 +75,14 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
     window.setTimeout(() => setPathCopied(false), 1200);
   }
 
+  function handleContentScroll(event: UIEvent<HTMLDivElement>) {
+    setIsScrolledDown(event.currentTarget.scrollTop > 240);
+  }
+
+  function scrollContentToTop() {
+    contentRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
+  }
+
   if (!session) {
     return null;
   }
@@ -75,7 +90,7 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
   return (
     <div className="fixed inset-0 z-40 bg-slate-900/30" onClick={onClose}>
       <aside
-        className="ml-auto flex h-full w-full max-w-3xl flex-col overflow-hidden bg-slate-50 shadow-2xl"
+        className="relative ml-auto flex h-full w-full max-w-3xl flex-col overflow-hidden bg-slate-50 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <header className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white p-4">
@@ -90,7 +105,13 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
             <X className="h-4 w-4" />
           </Button>
         </header>
-        <div className="flex-1 space-y-4 overflow-auto p-4">
+        <div
+          ref={contentRef}
+          role="region"
+          aria-label="Session detail content"
+          className="flex-1 space-y-4 overflow-auto p-4"
+          onScroll={handleContentScroll}
+        >
           <Card>
             <CardHeader>
               <CardTitle>Resume</CardTitle>
@@ -178,6 +199,18 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
             <MessageTimeline messages={visibleMessages} />
           )}
         </div>
+        {isScrolledDown && (
+          <Button
+            variant="default"
+            size="sm"
+            className="absolute bottom-4 right-4 z-10 rounded-full shadow-lg"
+            aria-label="Go to top"
+            onClick={scrollContentToTop}
+          >
+            <ArrowUp className="h-4 w-4" />
+            Top
+          </Button>
+        )}
       </aside>
     </div>
   );

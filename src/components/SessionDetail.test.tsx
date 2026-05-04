@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -9,6 +9,7 @@ import { SessionDetail } from "./SessionDetail";
 describe("SessionDetail", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("hides tool calls and tool results by default and reveals them independently", async () => {
@@ -76,6 +77,27 @@ describe("SessionDetail", () => {
       expect(screen.getByText("Tool result: read")).toBeInTheDocument();
     });
   });
+
+  it("scrolls the detail panel back to the top", async () => {
+    const scrollTo = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+      configurable: true,
+      value: scrollTo,
+    });
+    stubMessagesFetch();
+
+    render(<SessionDetail session={session} onClose={vi.fn()} />);
+
+    await screen.findByText("actual prompt");
+    expect(screen.queryByRole("button", { name: /go to top/i })).not.toBeInTheDocument();
+
+    fireEvent.scroll(screen.getByRole("region", { name: /session detail content/i }), {
+      target: { scrollTop: 300 },
+    });
+    await userEvent.click(screen.getByRole("button", { name: /go to top/i }));
+
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+  });
 });
 
 const session: SessionSummary = {
@@ -89,6 +111,32 @@ const session: SessionSummary = {
   resumeCommand: "omp --resume session-1",
   searchText: "test session",
 };
+
+function stubMessagesFetch() {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() =>
+      Promise.resolve(
+        jsonResponse({
+          items: [
+            {
+              id: "m1",
+              timestamp: "2026-01-01T00:00:00Z",
+              role: "user",
+              text: "actual prompt",
+              type: "message",
+            },
+          ],
+          total: 1,
+          limit: 5000,
+          offset: 0,
+          toolCallCount: 0,
+          toolResultCount: 0,
+        }),
+      ),
+    ),
+  );
+}
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
