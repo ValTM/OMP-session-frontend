@@ -5,28 +5,25 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-});
-
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
-  timeStyle: "short",
-});
+function getUserLocales() {
+  if (typeof navigator === "undefined") {
+    return undefined;
+  }
+  return navigator.languages.length > 0 ? navigator.languages : navigator.language;
+}
 
 export function formatDate(value: string) {
-  return dateTimeFormatter.format(new Date(value));
+  return new Date(value).toLocaleString(getUserLocales(), {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }
 
 export function formatDateTimeParts(value: string) {
   const date = new Date(value);
   return {
-    date: dateFormatter.format(date),
-    time: timeFormatter.format(date),
+    date: date.toLocaleDateString(getUserLocales(), { dateStyle: "medium" }),
+    time: date.toLocaleTimeString(getUserLocales(), { timeStyle: "short" }),
   };
 }
 
