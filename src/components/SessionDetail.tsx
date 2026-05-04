@@ -19,10 +19,11 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
   const [visibleMessages, setVisibleMessages] = useState<SessionMessage[]>([]);
   const [includeRaw, setIncludeRaw] = useState(false);
   const [showToolResults, setShowToolResults] = useState(false);
+  const [showToolCalls, setShowToolCalls] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pathCopied, setPathCopied] = useState(false);
-  const [isToolResultsPending, startToolResultsTransition] = useTransition();
+  const [isMessageFiltersPending, startMessageFiltersTransition] = useTransition();
 
   useEffect(() => {
     if (!session) {
@@ -36,18 +37,31 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
       .finally(() => setLoading(false));
   }, [session, includeRaw]);
 
+  const toolCallCount = useMemo(
+    () => messages.filter((message) => isToolCall(message)).length,
+    [messages],
+  );
+
   const toolResultCount = useMemo(
     () => messages.filter((message) => isToolResult(message)).length,
     [messages],
   );
 
   useEffect(() => {
-    startToolResultsTransition(() => {
+    startMessageFiltersTransition(() => {
       setVisibleMessages(
-        showToolResults ? messages : messages.filter((message) => !isToolResult(message)),
+        messages.filter((message) => {
+          if (isToolResult(message)) {
+            return showToolResults;
+          }
+          if (isToolCall(message)) {
+            return showToolCalls;
+          }
+          return true;
+        }),
       );
     });
-  }, [messages, showToolResults]);
+  }, [messages, showToolResults, showToolCalls]);
 
   async function copyRolloutPath() {
     if (!session) {
@@ -119,16 +133,25 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold text-slate-900">Messages</h3>
             <div className="flex flex-wrap items-center gap-3">
-              <Button
-                type="button"
-                variant={showToolResults ? "secondary" : "outline"}
-                size="sm"
-                disabled={toolResultCount === 0}
-                onClick={() => setShowToolResults((current) => !current)}
-              >
-                {showToolResults ? "Hide" : "Show"} tool results ({toolResultCount})
-              </Button>
-              {isToolResultsPending && (
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={showToolCalls}
+                  disabled={toolCallCount === 0}
+                  onChange={(event) => setShowToolCalls(event.target.checked)}
+                />
+                Show tool calls ({toolCallCount})
+              </label>
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={showToolResults}
+                  disabled={toolResultCount === 0}
+                  onChange={(event) => setShowToolResults(event.target.checked)}
+                />
+                Show tool results ({toolResultCount})
+              </label>
+              {isMessageFiltersPending && (
                 <span className="text-xs text-slate-500">Updating messages…</span>
               )}
               <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -145,8 +168,8 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
           {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           {!loading && !error && visibleMessages.length === 0 && (
             <p className="text-sm text-slate-500">
-              {toolResultCount > 0 && !showToolResults
-                ? "Only tool results are hidden. Use the toggle to inspect tool output."
+              {hiddenToolMessageCount(messages, showToolCalls, showToolResults) > 0
+                ? "Only tool calls/results are hidden. Use the toggles to inspect tool activity."
                 : "No readable messages found."}
             </p>
           )}
@@ -161,4 +184,24 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
 
 function isToolResult(message: SessionMessage) {
   return message.role === "toolResult";
+}
+
+function isToolCall(message: SessionMessage) {
+  return message.role === "toolCall";
+}
+
+function hiddenToolMessageCount(
+  messages: SessionMessage[],
+  showToolCalls: boolean,
+  showToolResults: boolean,
+) {
+  return messages.filter((message) => {
+    if (isToolCall(message)) {
+      return !showToolCalls;
+    }
+    if (isToolResult(message)) {
+      return !showToolResults;
+    }
+    return false;
+  }).length;
 }
