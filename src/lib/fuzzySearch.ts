@@ -19,6 +19,7 @@ export function fuzzySearchSessions(sessions: SessionSummary[], query: string) {
     keys: [
       { key: "id", threshold: rankings.CONTAINS },
       { key: "slug", threshold: rankings.WORD_STARTS_WITH },
+      { key: "title", threshold: rankings.CONTAINS },
       { key: "summary", threshold: rankings.CONTAINS },
       { key: "firstUserPrompt", threshold: rankings.CONTAINS },
       { key: "cwd", threshold: rankings.CONTAINS },

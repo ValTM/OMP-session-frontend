@@ -70,23 +70,25 @@ export function SessionTable({ sessions, loading, error, onSelect }: SessionTabl
                         <span
                           className="block truncate font-medium text-slate-900"
                           title={
+                            session.title ??
                             session.summary ??
                             session.slug ??
                             session.firstUserPrompt ??
                             "Untitled session"
                           }
                         >
-                          {session.summary ??
+                          {session.title ??
+                            session.summary ??
                             session.slug ??
                             session.firstUserPrompt ??
                             "Untitled session"}
                         </span>
-                        {session.firstUserPrompt && (
+                        {(session.summary || session.firstUserPrompt) && (
                           <span
                             className="block truncate text-slate-500"
-                            title={session.firstUserPrompt}
+                            title={session.summary ?? session.firstUserPrompt}
                           >
-                            {session.firstUserPrompt}
+                            {session.summary ?? session.firstUserPrompt}
                           </span>
                         )}
                         <span className="flex flex-wrap gap-2">

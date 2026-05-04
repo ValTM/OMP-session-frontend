@@ -97,8 +97,11 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
           <div className="min-w-0 space-y-1">
             <p className="font-mono text-xs text-slate-500">{session.id}</p>
             <h2 className="text-lg font-semibold text-slate-950">
-              {session.summary ?? session.slug ?? "Untitled session"}
+              {session.title ?? session.summary ?? session.slug ?? "Untitled session"}
             </h2>
+            {session.title && session.summary && (
+              <p className="text-sm text-slate-500">{session.summary}</p>
+            )}
             <p className="text-sm text-slate-500">Updated {formatDate(session.updatedAt)}</p>
           </div>
           <Button variant="ghost" size="icon" aria-label="Close detail" onClick={onClose}>

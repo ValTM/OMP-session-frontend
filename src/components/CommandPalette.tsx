@@ -82,7 +82,7 @@ export function CommandPalette({ sessions, onSelect }: CommandPaletteProps) {
                   className="cursor-pointer rounded-lg px-3 py-2 aria-selected:bg-slate-100"
                 >
                   <div className="font-medium text-slate-900">
-                    {session.summary ?? session.slug ?? session.id}
+                    {session.title ?? session.summary ?? session.slug ?? session.id}
                   </div>
                   <div className="font-mono text-xs text-slate-500">
                     {session.id} · {compactPath(session.cwd)}

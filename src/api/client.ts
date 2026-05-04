@@ -4,6 +4,7 @@ export interface SessionSummary {
   cwd: string;
   sourceKind: string;
   rolloutPath: string;
+  title?: string;
   slug?: string;
   summary?: string;
   firstUserPrompt?: string;
