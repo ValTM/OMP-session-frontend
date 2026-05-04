@@ -2,7 +2,7 @@ import type { SessionSummary } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { compactPath, formatDate } from "@/lib/utils";
+import { compactPath, formatDate, formatDateTimeParts } from "@/lib/utils";
 
 import { ResumeCommand } from "./ResumeCommand";
 
@@ -53,65 +53,77 @@ export function SessionTable({ sessions, loading, error, onSelect }: SessionTabl
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {sessions.map((session) => (
-              <tr key={session.id} className="align-top hover:bg-slate-50">
-                <td className="w-[55%] overflow-hidden px-4 py-3">
-                  <Button
-                    variant="ghost"
-                    className="h-auto w-full max-w-full justify-start p-0 text-left"
-                    onClick={() => onSelect(session)}
-                  >
-                    <span className="min-w-0 max-w-full w-full space-y-1">
-                      <span className="block truncate font-mono text-xs text-slate-500">
-                        {session.id}
-                      </span>
-                      <span
-                        className="block truncate font-medium text-slate-900"
-                        title={
-                          session.summary ??
-                          session.slug ??
-                          session.firstUserPrompt ??
-                          "Untitled session"
-                        }
-                      >
-                        {session.summary ??
-                          session.slug ??
-                          session.firstUserPrompt ??
-                          "Untitled session"}
-                      </span>
-                      {session.firstUserPrompt && (
-                        <span
-                          className="block truncate text-slate-500"
-                          title={session.firstUserPrompt}
-                        >
-                          {session.firstUserPrompt}
+            {sessions.map((session) => {
+              const updated = formatDateTimeParts(session.updatedAt);
+              return (
+                <tr key={session.id} className="align-top hover:bg-slate-50">
+                  <td className="w-[55%] overflow-hidden px-4 py-3">
+                    <Button
+                      variant="ghost"
+                      className="h-auto w-full max-w-full justify-start p-0 text-left"
+                      onClick={() => onSelect(session)}
+                    >
+                      <span className="min-w-0 max-w-full w-full space-y-1">
+                        <span className="block truncate font-mono text-xs text-slate-500">
+                          {session.id}
                         </span>
-                      )}
-                      <span className="flex flex-wrap gap-2">
-                        <Badge>{session.sourceKind}</Badge>
-                        <Badge>{session.messageCount} messages</Badge>
-                        {session.parseError && (
-                          <Badge className="border-amber-200 bg-amber-50 text-amber-700">
-                            partial
-                          </Badge>
+                        <span
+                          className="block truncate font-medium text-slate-900"
+                          title={
+                            session.summary ??
+                            session.slug ??
+                            session.firstUserPrompt ??
+                            "Untitled session"
+                          }
+                        >
+                          {session.summary ??
+                            session.slug ??
+                            session.firstUserPrompt ??
+                            "Untitled session"}
+                        </span>
+                        {session.firstUserPrompt && (
+                          <span
+                            className="block truncate text-slate-500"
+                            title={session.firstUserPrompt}
+                          >
+                            {session.firstUserPrompt}
+                          </span>
                         )}
+                        <span className="flex flex-wrap gap-2">
+                          <Badge>{session.sourceKind}</Badge>
+                          <Badge>{session.messageCount} messages</Badge>
+                          {session.parseError && (
+                            <Badge className="border-amber-200 bg-amber-50 text-amber-700">
+                              partial
+                            </Badge>
+                          )}
+                        </span>
                       </span>
-                    </span>
-                  </Button>
-                </td>
-                <td className="w-[25%] overflow-hidden px-4 py-3 font-mono text-xs text-slate-500">
-                  <div className="truncate" title={compactPath(session.cwd)}>
-                    {compactPath(session.cwd)}
-                  </div>
-                </td>
-                <td className="w-[12%] overflow-hidden whitespace-nowrap px-4 py-3 text-slate-600">
-                  <span className="block truncate">{formatDate(session.updatedAt)}</span>
-                </td>
-                <td className="w-[8%] overflow-hidden px-4 py-3">
-                  <ResumeCommand command={session.resumeCommand} compact />
-                </td>
-              </tr>
-            ))}
+                    </Button>
+                  </td>
+                  <td className="w-[25%] overflow-hidden px-4 py-3 font-mono text-xs text-slate-500">
+                    <div className="truncate" title={compactPath(session.cwd)}>
+                      {compactPath(session.cwd)}
+                    </div>
+                  </td>
+                  <td className="w-[12%] overflow-hidden px-4 py-3 text-slate-600">
+                    <time
+                      className="block leading-tight"
+                      dateTime={session.updatedAt}
+                      title={formatDate(session.updatedAt)}
+                    >
+                      <span className="block whitespace-nowrap">{updated.date}</span>
+                      <span className="block whitespace-nowrap text-xs text-slate-500">
+                        {updated.time}
+                      </span>
+                    </time>
+                  </td>
+                  <td className="w-[8%] overflow-hidden px-4 py-3">
+                    <ResumeCommand command={session.resumeCommand} compact />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
