@@ -48,11 +48,11 @@ export function CommandPalette({ sessions, onSelect }: CommandPaletteProps) {
       </Button>
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/40 p-4 pt-[12vh]"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/40 p-4 pt-[12vh] dark:bg-slate-950/70"
           onClick={() => setOpen(false)}
         >
           <Command
-            className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl"
+            className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
             shouldFilter={false}
             onClick={(event) => event.stopPropagation()}
           >
@@ -61,9 +61,9 @@ export function CommandPalette({ sessions, onSelect }: CommandPaletteProps) {
               onValueChange={setQuery}
               autoFocus
               placeholder="Jump to session…"
-              className="w-full border-b border-slate-200 px-4 py-3 outline-none"
+              className="w-full border-b border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none placeholder:text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400"
             />
-            <div className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500">
+            <div className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
               {query.trim().length > 0 && query.trim().length < minSearchCharacters
                 ? `Type ${minSearchCharacters - query.trim().length} more characters to search`
                 : isDebouncing || isPending
@@ -71,7 +71,7 @@ export function CommandPalette({ sessions, onSelect }: CommandPaletteProps) {
                   : "Showing recent sessions. Type 3+ characters to search."}
             </div>
             <Command.List className="max-h-[24rem] overflow-auto p-2">
-              <Command.Empty className="p-4 text-sm text-slate-500">
+              <Command.Empty className="p-4 text-sm text-slate-500 dark:text-slate-400">
                 No sessions found.
               </Command.Empty>
               {results.map((session) => (
@@ -79,12 +79,12 @@ export function CommandPalette({ sessions, onSelect }: CommandPaletteProps) {
                   key={session.id}
                   value={session.id}
                   onSelect={() => selectSession(session)}
-                  className="cursor-pointer rounded-lg px-3 py-2 aria-selected:bg-slate-100"
+                  className="cursor-pointer rounded-lg px-3 py-2 aria-selected:bg-slate-100 dark:aria-selected:bg-slate-800"
                 >
-                  <div className="font-medium text-slate-900">
+                  <div className="font-medium text-slate-900 dark:text-slate-100">
                     {session.title ?? session.summary ?? session.slug ?? session.id}
                   </div>
-                  <div className="font-mono text-xs text-slate-500">
+                  <div className="font-mono text-xs text-slate-500 dark:text-slate-400">
                     {session.id} · {compactPath(session.cwd)}
                   </div>
                 </Command.Item>

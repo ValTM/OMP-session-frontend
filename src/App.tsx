@@ -7,9 +7,11 @@ import { Filters } from "@/components/Filters";
 import { SearchBar } from "@/components/SearchBar";
 import { SessionDetail } from "@/components/SessionDetail";
 import { SessionTable } from "@/components/SessionTable";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDebouncedSearchQuery } from "@/hooks/useDebouncedSearchQuery";
+import { useTheme } from "@/hooks/useTheme";
 import { fuzzySearchSessions } from "@/lib/fuzzySearch";
 
 export default function App() {
@@ -40,6 +42,7 @@ export default function App() {
     isPending: isSearchPending,
     minSearchCharacters,
   } = useDebouncedSearchQuery(query);
+  const { themeMode, resolvedTheme, setThemeMode } = useTheme();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -105,14 +108,21 @@ export default function App() {
   );
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-950 md:p-6">
+    <main className="min-h-screen bg-slate-50 p-4 text-slate-950 transition-colors dark:bg-slate-950 dark:text-slate-100 md:p-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">OMP Sessions</h1>
-            <p className="text-sm text-slate-500">Global read-only viewer for ~/.omp sessions.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Global read-only viewer for ~/.omp sessions.
+            </p>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle
+              themeMode={themeMode}
+              resolvedTheme={resolvedTheme}
+              onThemeModeChange={setThemeMode}
+            />
             <CommandPalette sessions={sessions} onSelect={setSelected} />
             <Button variant="outline" onClick={() => void load()} disabled={loading}>
               <RefreshCw className="h-4 w-4" />
@@ -138,7 +148,7 @@ export default function App() {
           </CardContent>
         </Card>
 
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
           <span>
             Showing {filteredSessions.length} of {sessions.length} sessions
           </span>

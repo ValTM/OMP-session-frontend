@@ -32,7 +32,9 @@ export function MessageTimeline({ messages }: MessageTimelineProps) {
   }, [isPending]);
 
   if (messages.length === 0) {
-    return <p className="text-sm text-slate-500">No readable messages found.</p>;
+    return (
+      <p className="text-sm text-slate-500 dark:text-slate-400">No readable messages found.</p>
+    );
   }
 
   return (
@@ -43,8 +45,11 @@ export function MessageTimeline({ messages }: MessageTimelineProps) {
         const preview = getToolResultPreview(message.text);
 
         return (
-          <article key={message.id} className="rounded-lg border border-slate-200 bg-white p-3">
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <article
+            key={message.id}
+            className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <Badge>{message.role || "unknown"}</Badge>
               {message.timestamp && <span>{formatDate(message.timestamp)}</span>}
               {isToolResult && (
@@ -67,10 +72,10 @@ export function MessageTimeline({ messages }: MessageTimelineProps) {
               )}
             </div>
             {isToolResult && !isExpanded && (
-              <p className="truncate text-sm text-slate-500">{preview}</p>
+              <p className="truncate text-sm text-slate-500 dark:text-slate-400">{preview}</p>
             )}
             {isExpanded && (
-              <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap break-words rounded-md bg-slate-50 p-3 font-sans text-sm leading-6 text-slate-800">
+              <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap break-words rounded-md bg-slate-50 p-3 font-sans text-sm leading-6 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
                 {message.text}
               </pre>
             )}

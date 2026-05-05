@@ -73,7 +73,7 @@ export function Filters({
       {isSecondaryFiltersOpen && (
         <div
           id="secondary-session-filters"
-          className="flex w-full flex-wrap items-center gap-2 border-t border-slate-100 pt-3"
+          className="flex w-full flex-wrap items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800"
         >
           <Select
             aria-label="Filter by working directory"
@@ -97,7 +97,7 @@ export function Filters({
             <option value="">All sources</option>
             <option value="cli">CLI</option>
           </Select>
-          <label className="flex h-9 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-700">
+          <label className="flex h-9 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
             <input
               type="checkbox"
               checked={showEmptyMessages}

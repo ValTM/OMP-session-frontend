@@ -20,7 +20,7 @@ export function ResumeCommand({ command, compact = false }: ResumeCommandProps) 
   return (
     <div className="flex items-center gap-2">
       {!compact && (
-        <code className="min-w-0 flex-1 truncate rounded-md bg-slate-100 px-2 py-1 font-mono text-xs text-slate-700">
+        <code className="min-w-0 flex-1 truncate rounded-md bg-slate-100 px-2 py-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">
           {command}
         </code>
       )}
