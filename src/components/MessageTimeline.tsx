@@ -4,7 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import type { SessionMessage } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatModelLabel, formatTokenCount } from "@/lib/utils";
+
+import { UsageDetails } from "./UsageDetails";
 
 interface MessageTimelineProps {
   messages: SessionMessage[];
@@ -12,6 +14,7 @@ interface MessageTimelineProps {
 
 export function MessageTimeline({ messages }: MessageTimelineProps) {
   const [expandedToolResults, setExpandedToolResults] = useState<Record<string, boolean>>({});
+  const [expandedUsage, setExpandedUsage] = useState<Record<string, boolean>>({});
   const [isPending, startTransition] = useTransition();
   const [pendingToolResultID, setPendingToolResultID] = useState<string | null>(null);
 
@@ -23,6 +26,13 @@ export function MessageTimeline({ messages }: MessageTimelineProps) {
         [id]: !current[id],
       }));
     });
+  }
+
+  function toggleUsage(id: string) {
+    setExpandedUsage((current) => ({
+      ...current,
+      [id]: !current[id],
+    }));
   }
 
   useEffect(() => {
@@ -43,6 +53,8 @@ export function MessageTimeline({ messages }: MessageTimelineProps) {
         const isToolResult = message.role === "toolResult";
         const isExpanded = !isToolResult || expandedToolResults[message.id] === true;
         const preview = getToolResultPreview(message.text);
+        const hasUsage = message.usage !== undefined && message.usage.totalTokens > 0;
+        const isUsageExpanded = expandedUsage[message.id] === true;
 
         return (
           <article
@@ -52,6 +64,38 @@ export function MessageTimeline({ messages }: MessageTimelineProps) {
             <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <Badge>{message.role || "unknown"}</Badge>
               {message.timestamp && <span>{formatDate(message.timestamp)}</span>}
+              {message.model && (
+                <Badge
+                  className="border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/70 dark:bg-indigo-950/40 dark:text-indigo-300"
+                  title={message.model}
+                >
+                  {message.role === "toolResult" ? "requested: " : ""}
+                  {formatModelLabel(message.model)}
+                </Badge>
+              )}
+              {hasUsage && (
+                <>
+                  <Badge
+                    className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    title={`${message.usage?.totalTokens.toLocaleString()} total tokens`}
+                  >
+                    {formatTokenCount(message.usage?.totalTokens ?? 0)} tokens
+                  </Badge>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => toggleUsage(message.id)}
+                  >
+                    {isUsageExpanded ? (
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    )}
+                    {isUsageExpanded ? "Hide usage" : "Usage details"}
+                  </Button>
+                </>
+              )}
               {isToolResult && (
                 <Button
                   type="button"
@@ -71,6 +115,11 @@ export function MessageTimeline({ messages }: MessageTimelineProps) {
                 <span>Updating…</span>
               )}
             </div>
+            {hasUsage && isUsageExpanded && message.usage && (
+              <div className="mb-3">
+                <UsageDetails usage={message.usage} />
+              </div>
+            )}
             {isToolResult && !isExpanded && (
               <p className="truncate text-sm text-slate-500 dark:text-slate-400">{preview}</p>
             )}

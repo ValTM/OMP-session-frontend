@@ -2,7 +2,13 @@ import type { SessionSummary } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { compactPath, formatDate, formatDateTimeParts } from "@/lib/utils";
+import {
+  compactPath,
+  formatDate,
+  formatDateTimeParts,
+  formatModelLabel,
+  formatTokenCount,
+} from "@/lib/utils";
 
 import { ResumeCommand } from "./ResumeCommand";
 
@@ -97,6 +103,28 @@ export function SessionTable({ sessions, loading, error, onSelect }: SessionTabl
                         <span className="flex flex-wrap gap-2">
                           <Badge>{session.sourceKind}</Badge>
                           <Badge>{session.messageCount} messages</Badge>
+                          {session.mainUsage && session.mainUsage.totalTokens > 0 && (
+                            <Badge
+                              className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300"
+                              title={`${session.mainUsage.totalTokens.toLocaleString()} total tokens`}
+                            >
+                              {formatTokenCount(session.mainUsage.totalTokens)} tokens
+                            </Badge>
+                          )}
+                          {session.mainModels?.slice(0, 3).map((model) => (
+                            <Badge
+                              key={model}
+                              className="border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/70 dark:bg-indigo-950/40 dark:text-indigo-300"
+                              title={model}
+                            >
+                              {formatModelLabel(model)}
+                            </Badge>
+                          ))}
+                          {(session.mainModels?.length ?? 0) > 3 && (
+                            <Badge title={session.mainModels?.slice(3).join(", ")}>
+                              +{(session.mainModels?.length ?? 0) - 3} models
+                            </Badge>
+                          )}
                           {session.parseError && (
                             <Badge className="border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-300">
                               partial

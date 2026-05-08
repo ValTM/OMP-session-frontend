@@ -23,6 +23,7 @@ export function fuzzySearchSessions(sessions: SessionSummary[], query: string) {
       { key: "summary", threshold: rankings.CONTAINS },
       { key: "firstUserPrompt", threshold: rankings.CONTAINS },
       { key: "cwd", threshold: rankings.CONTAINS },
+      { key: "mainModels", threshold: rankings.CONTAINS },
       { key: "searchText", threshold: rankings.CONTAINS },
     ],
   });

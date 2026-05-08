@@ -9,6 +9,8 @@ export interface SessionSummary {
   summary?: string;
   firstUserPrompt?: string;
   messageCount: number;
+  mainModels?: string[];
+  mainUsage?: TokenUsage;
   resumeCommand: string;
   searchText: string;
   parseError?: string;
@@ -21,7 +23,41 @@ export interface SessionMessage {
   role: string;
   text: string;
   type: string;
+  model?: string;
+  modelSource?: string;
+  usage?: TokenUsage;
   raw?: unknown;
+}
+
+export interface TokenUsage {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheWrite: number;
+  totalTokens: number;
+  premiumRequests?: number;
+  reasoningTokens?: number;
+  cttl?: CacheWriteTTL;
+  server?: ServerToolUsage;
+  cost: UsageCost;
+}
+
+export interface CacheWriteTTL {
+  ephemeral5m?: number;
+  ephemeral1h?: number;
+}
+
+export interface ServerToolUsage {
+  webSearch?: number;
+  webFetch?: number;
+}
+
+export interface UsageCost {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheWrite: number;
+  total: number;
 }
 
 export interface CwdOption {

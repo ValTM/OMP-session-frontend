@@ -8,6 +8,7 @@ import { compactPath, formatDate } from "@/lib/utils";
 
 import { MessageTimeline } from "./MessageTimeline";
 import { ResumeCommand } from "./ResumeCommand";
+import { UsageDetails } from "./UsageDetails";
 
 interface SessionDetailProps {
   session: SessionSummary | null;
@@ -152,6 +153,20 @@ export function SessionDetail({ session, onClose }: SessionDetailProps) {
               )}
             </CardContent>
           </Card>
+          {session.mainUsage && session.mainUsage.totalTokens > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Usage</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Main conversation usage only. Tool output is counted when a later model turn
+                  consumes it as input/cache.
+                </p>
+                <UsageDetails usage={session.mainUsage} />
+              </CardContent>
+            </Card>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold text-slate-900 dark:text-slate-100">Messages</h3>
             <div className="flex flex-wrap items-center gap-3">

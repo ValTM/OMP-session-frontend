@@ -37,6 +37,22 @@ describe("SessionDetail", () => {
                       role: "toolCall",
                       text: "Tool call: read",
                       type: "message",
+                      model: "github-copilot/gpt-5.5",
+                      usage: {
+                        input: 10,
+                        output: 5,
+                        cacheRead: 100,
+                        cacheWrite: 2,
+                        totalTokens: 117,
+                        reasoningTokens: 1,
+                        cost: {
+                          input: 0.01,
+                          output: 0.02,
+                          cacheRead: 0.001,
+                          cacheWrite: 0.002,
+                          total: 0.033,
+                        },
+                      },
                     },
                   ]
                 : []),
@@ -48,6 +64,7 @@ describe("SessionDetail", () => {
                       role: "toolResult",
                       text: "Tool result: read\nfile contents",
                       type: "message",
+                      model: "github-copilot/gpt-5.5",
                     },
                   ]
                 : []),
@@ -70,12 +87,21 @@ describe("SessionDetail", () => {
 
     await userEvent.click(screen.getByRole("checkbox", { name: /show tool calls \(1\)/i }));
     expect(await screen.findByText("Tool call: read")).toBeInTheDocument();
+    expect(screen.getByText("gpt-5.5")).toHaveAttribute("title", "github-copilot/gpt-5.5");
+    expect(screen.getByText("117 tokens")).toHaveAttribute("title", "117 total tokens");
+    await userEvent.click(screen.getByRole("button", { name: /usage details/i }));
+    expect(screen.getByText("Reasoning")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.queryByText("Tool result: read")).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("checkbox", { name: /show tool results \(1\)/i }));
     await waitFor(() => {
       expect(screen.getByText("Tool result: read")).toBeInTheDocument();
     });
+    expect(screen.getByText("requested: gpt-5.5")).toHaveAttribute(
+      "title",
+      "github-copilot/gpt-5.5",
+    );
   });
 
   it("scrolls the detail panel back to the top", async () => {
@@ -110,6 +136,14 @@ const session: SessionSummary = {
   messageCount: 1,
   resumeCommand: "omp --resume session-1",
   searchText: "test session",
+  mainUsage: {
+    input: 30,
+    output: 12,
+    cacheRead: 300,
+    cacheWrite: 5,
+    totalTokens: 347,
+    cost: { input: 0.03, output: 0.05, cacheRead: 0.003, cacheWrite: 0.005, total: 0.088 },
+  },
 };
 
 function stubMessagesFetch() {
